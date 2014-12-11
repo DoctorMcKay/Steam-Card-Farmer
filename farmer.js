@@ -10,6 +10,8 @@ SteamStuff(Steam, client);
 var g_Jar = request.jar();
 request = request.defaults({"jar": g_Jar});
 
+var g_CheckTimer;
+
 function log(message) {
 	var date = new Date();
 	var time = [date.getFullYear(), date.getMonth() + 1, date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds()];
@@ -62,6 +64,10 @@ client._handlers[Steam.EMsg.ClientItemAnnouncements] = function() {
 };
 
 function checkCardApps() {
+	if(g_CheckTimer) {
+		clearTimeout(g_CheckTimer);
+	}
+	
 	log("Checking card drops...");
 	
 	client.webLogOn(function(cookies) {
@@ -106,12 +112,12 @@ function checkCardApps() {
 				client.logOff();
 				process.exit(0);
 			} else {
-				checkCardsInSeconds(600);
+				checkCardsInSeconds(1200); // 20 minutes to be safe, we should automatically check when Steam notifies us that we got a new item anyway
 			}
 		});
 	});
 }
 
 function checkCardsInSeconds(seconds) {
-	setTimeout(checkCardApps, (1000 * seconds));
+	g_CheckTimer = setTimeout(checkCardApps, (1000 * seconds));
 }
