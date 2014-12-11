@@ -1,7 +1,7 @@
 {
 	"name": "Steam-Card-Farmer",
 	"description": "Automatically farms card drops for Steam games you own with remaining drops",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"private": true,
 	"repository": {
 		"type": "git",
