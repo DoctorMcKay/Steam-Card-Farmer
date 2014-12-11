@@ -53,9 +53,13 @@ client.on('loggedOn', function() {
 });
 
 client.on('webSessionID', function(sessionID) {
-	setInterval(checkCardApps, (1000 * 60 * 10));
 	checkCardApps();
 });
+
+client._handlers[Steam.EMsg.ClientItemAnnouncements] = function() {
+	log("Got new item notification!");
+	checkCardApps();
+};
 
 function checkCardApps() {
 	log("Checking card drops...");
@@ -68,6 +72,7 @@ function checkCardApps() {
 		request("https://steamcommunity.com/my/badges/", function(err, response, body) {
 			if(err) {
 				log("Couldn't request badge page: " + err);
+				checkCardsInSeconds(300);
 				return;
 			}
 			
@@ -100,7 +105,13 @@ function checkCardApps() {
 			if(totalDropsLeft == 0) {
 				client.logOff();
 				process.exit(0);
+			} else {
+				checkCardsInSeconds(600);
 			}
 		});
 	});
+}
+
+function checkCardsInSeconds(seconds) {
+	setTimeout(checkCardApps, (1000 * seconds));
 }
