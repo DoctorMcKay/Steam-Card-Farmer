@@ -39,7 +39,7 @@ prompt.get({
 }, function(err, result) {
 	if(err) {
 		log("Error: " + err);
-		process.exit(1);
+		shutdown(1);
 		return;
 	}
 	
@@ -109,8 +109,7 @@ function checkCardApps() {
 			
 			log(totalDropsLeft + " card drop" + (totalDropsLeft == 1 ? '' : 's') + " remaining across " + appsWithDrops + " app" + (appsWithDrops == 1 ? '' : 's'));
 			if(totalDropsLeft == 0) {
-				client.logOff();
-				process.exit(0);
+				shutdown(0);
 			} else {
 				checkCardsInSeconds(1200); // 20 minutes to be safe, we should automatically check when Steam notifies us that we got a new item anyway
 			}
@@ -120,4 +119,17 @@ function checkCardApps() {
 
 function checkCardsInSeconds(seconds) {
 	g_CheckTimer = setTimeout(checkCardApps, (1000 * seconds));
+}
+
+process.on('SIGINT', function() {
+	log("Logging off and shutting down");
+	shutdown(0);
+});
+
+function shutdown(code) {
+	client.gamesPlayed([]);
+	client.logOff();
+	setTimeout(function() {
+		process.exit(code);
+	}, 500);
 }
