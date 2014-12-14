@@ -82,7 +82,7 @@ function checkCardApps() {
 			
 			if(err) {
 				log("Couldn't request badge page: " + err);
-				checkCardsInSeconds(300);
+				checkCardsInSeconds(30);
 				return;
 			}
 			
