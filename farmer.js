@@ -76,7 +76,7 @@ function checkCardApps() {
 		});
 		
 		request("https://steamcommunity.com/my/badges/", function(err, response, body) {
-			if(response.statusCode !== 200) {
+			if(response && response.statusCode !== 200) {
 				err = "HTTP " + response.statusCode;
 			}
 			
