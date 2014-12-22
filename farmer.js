@@ -25,6 +25,9 @@ function log(message) {
 	console.log(time[0] + '-' + time[1] + '-' + time[2] + ' ' + time[3] + ':' + time[4] + ':' + time[5] + ' - ' + message);
 };
 
+var g_Username;
+var g_Password;
+
 prompt.start();
 prompt.get({
 	"properties": {
@@ -48,6 +51,9 @@ prompt.get({
 		"accountName": result.username,
 		"password": result.password
 	});
+	
+	g_Username = result.username;
+	g_Password = result.password;
 });
 
 client.on('loggedOn', function() {
@@ -56,6 +62,16 @@ client.on('loggedOn', function() {
 
 client.on('webSessionID', function(sessionID) {
 	checkCardApps();
+});
+
+client.on('error', function(e) {
+	log("Error: " + e);
+	setTimeout(function() {
+		client.logOn({
+			"accountName": g_Username,
+			"password": g_Password
+		});
+	}, 10000);
 });
 
 client._handlers[Steam.EMsg.ClientItemAnnouncements] = function() {
