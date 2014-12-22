@@ -74,8 +74,13 @@ client.on('error', function(e) {
 	}, 10000);
 });
 
-client._handlers[Steam.EMsg.ClientItemAnnouncements] = function() {
-	log("Got new item notification!");
+client._handlers[Steam.EMsg.ClientItemAnnouncements] = function(data) {
+	var proto = Steam.Internal.CMsgClientItemAnnouncements.parse(data);
+	if(proto.countNewItems === 0) {
+		return;
+	}
+	
+	log("Got notification of new inventory items: " + proto.countNewItems + " new item" + (proto.countNewItems == 1 ? '' : 's'));
 	checkCardApps();
 };
 
