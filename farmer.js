@@ -126,7 +126,11 @@ function checkCardApps() {
 					appLaunched = true;
 					var urlparts = $(infolines[i]).parent().find('.badge_title_playgame a').attr('href').split('/');
 					var appid = urlparts[urlparts.length - 1];
-					var title = $(infolines[i]).parent().parent().find('.badge_title').html().replace('&#xA0;<span class="badge_view_details">View details</span>', '').trim();
+					
+					var title = $(infolines[i]).parent().parent().find('.badge_title');
+					title.find('.badge_view_details').remove();
+					title = title.text().trim();
+					
 					log("Idling app " + appid + " \"" + title + "\" - " + match[1] + " drop" + (match[1] == 1 ? '' : 's') + " remaining");
 					client.gamesPlayed([parseInt(appid, 10)]);
 				}
