@@ -15,7 +15,7 @@ On the command line, just type `steamcardfarmer`. Optionally include your userna
 
 If not provided on the command line, it'll prompt you for your Steam username and password. Just because it invariably ends up with someone asking about it, **when you enter your password, no characters will show up**. Don't worry, you're typing.
 
-It'll automatically switch through all games you have with remaining card drops (it checks every 10 minutes). One could theoretically mass-idle all games at once, but it takes just as long and this way doesn't rack up unnecessary fake playtime.
+It'll automatically switch through all games you have with remaining card drops (it checks every 20 minutes or immediately when a new item is received). One could theoretically mass-idle all games at once, but it takes just as long and this way doesn't rack up unnecessary fake playtime.
 
 If you have more than 250 games/badges, **this will only idle your [first page](https://steamcommunity.com/my/badges)**. Because I made this application only for myself and shared it just because, I have no plans to add things that I will not use. The best way to get me to support multiple pages is to [buy me games](https://steamcommunity.com/id/DoctorMcKay). Pull requests welcome.
 
