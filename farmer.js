@@ -27,6 +27,9 @@ function log(message) {
 	console.log(time[0] + '-' + time[1] + '-' + time[2] + ' ' + time[3] + ':' + time[4] + ':' + time[5] + ' - ' + message);
 };
 
+var g_Username;
+var g_Password;
+
 var argsStartIdx = 2;
 if(process.argv[0] == 'steamcardfarmer') {
 	argsStartIdx = 1;
@@ -62,6 +65,9 @@ if(process.argv.length == argsStartIdx + 2) {
 			"accountName": result.username,
 			"password": result.password
 		});
+	
+	g_Username = result.username;
+	g_Password = result.password;
 	});
 }
 
@@ -73,8 +79,23 @@ client.on('webSessionID', function(sessionID) {
 	checkCardApps();
 });
 
-client._handlers[Steam.EMsg.ClientItemAnnouncements] = function() {
-	log("Got new item notification!");
+client.on('error', function(e) {
+	log("Error: " + e);
+	setTimeout(function() {
+		client.logOn({
+			"accountName": g_Username,
+			"password": g_Password
+		});
+	}, 10000);
+});
+
+client._handlers[Steam.EMsg.ClientItemAnnouncements] = function(data) {
+	var proto = Steam.Internal.CMsgClientItemAnnouncements.parse(data);
+	if(proto.countNewItems === 0) {
+		return;
+	}
+	
+	log("Got notification of new inventory items: " + proto.countNewItems + " new item" + (proto.countNewItems == 1 ? '' : 's'));
 	checkCardApps();
 };
 
@@ -91,9 +112,13 @@ function checkCardApps() {
 		});
 		
 		request("https://steamcommunity.com/my/badges/", function(err, response, body) {
+			if(response && response.statusCode !== 200) {
+				err = "HTTP " + response.statusCode;
+			}
+			
 			if(err) {
 				log("Couldn't request badge page: " + err);
-				checkCardsInSeconds(300);
+				checkCardsInSeconds(30);
 				return;
 			}
 			
@@ -116,7 +141,11 @@ function checkCardApps() {
 					appLaunched = true;
 					var urlparts = $(infolines[i]).parent().find('.badge_title_playgame a').attr('href').split('/');
 					var appid = urlparts[urlparts.length - 1];
-					var title = $(infolines[i]).parent().parent().find('.badge_title').html().replace('&#xA0;<span class="badge_view_details">View details</span>', '').trim();
+					
+					var title = $(infolines[i]).parent().parent().find('.badge_title');
+					title.find('.badge_view_details').remove();
+					title = title.text().trim();
+					
 					log("Idling app " + appid + " \"" + title + "\" - " + match[1] + " drop" + (match[1] == 1 ? '' : 's') + " remaining");
 					client.gamesPlayed([parseInt(appid, 10)]);
 				}
