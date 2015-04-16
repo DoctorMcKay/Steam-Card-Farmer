@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 var Steam = require('steam');
 var SteamStuff = require('steamstuff');
 var prompt = require('prompt');
@@ -25,30 +27,43 @@ function log(message) {
 	console.log(time[0] + '-' + time[1] + '-' + time[2] + ' ' + time[3] + ':' + time[4] + ':' + time[5] + ' - ' + message);
 };
 
-prompt.start();
-prompt.get({
-	"properties": {
-		"username": {
-			"required": true,
-		},
-		"password": {
-			"hidden": true,
-			"required": true
-		}
-	}
-}, function(err, result) {
-	if(err) {
-		log("Error: " + err);
-		shutdown(1);
-		return;
-	}
-	
-	log("Initializing Steam client...");
+var argsStartIdx = 2;
+if(process.argv[0] == 'steamcardfarmer') {
+	argsStartIdx = 1;
+}
+
+if(process.argv.length == argsStartIdx + 2) {
+	log("Reading Steam credentials from command line");
 	client.logOn({
-		"accountName": result.username,
-		"password": result.password
+		"accountName": process.argv[argsStartIdx],
+		"password": process.argv[argsStartIdx + 1]
 	});
-});
+} else {
+	prompt.start();
+	prompt.get({
+		"properties": {
+			"username": {
+				"required": true,
+			},
+			"password": {
+				"hidden": true,
+				"required": true
+			}
+		}
+	}, function(err, result) {
+		if(err) {
+			log("Error: " + err);
+			shutdown(1);
+			return;
+		}
+		
+		log("Initializing Steam client...");
+		client.logOn({
+			"accountName": result.username,
+			"password": result.password
+		});
+	});
+}
 
 client.on('loggedOn', function() {
 	log("Logged into Steam!");

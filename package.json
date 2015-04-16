@@ -1,8 +1,11 @@
 {
-	"name": "Steam-Card-Farmer",
+	"name": "steam-card-farmer",
 	"description": "Automatically farms card drops for Steam games you own with remaining drops",
-	"version": "1.2.0",
-	"private": true,
+	"version": "1.3.0",
+	"bin": {
+		"steamcardfarmer": "./farmer.js"
+	},
+	"preferGlobal": true,
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/DoctorMcKay/Steam-Card-Farmer"
@@ -10,7 +13,7 @@
 	"dependencies": {
 		"cheerio": "0.18.x",
 		"steam": "0.6.x",
-		"steamstuff": "./dist/steamstuff-1.0.2.tgz",
+		"steamstuff": "file:./dist/steamstuff-1.1.0.tgz",
 		"prompt": "0.2.x",
 		"request": "2.51.x"
 	}
