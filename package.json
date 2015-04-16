@@ -10,7 +10,7 @@
 	"dependencies": {
 		"cheerio": "0.18.x",
 		"steam": "0.6.x",
-		"steamstuff": "https://www.doctormckay.com/node-private/steamstuff-1.0.1.tgz",
+		"steamstuff": "./dist/steamstuff-1.0.2.tgz",
 		"prompt": "0.2.x",
 		"request": "2.51.x"
 	}
