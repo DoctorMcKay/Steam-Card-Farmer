@@ -112,12 +112,8 @@ function checkCardApps() {
 		});
 		
 		request("https://steamcommunity.com/my/badges/", function(err, response, body) {
-			if(response && response.statusCode !== 200) {
-				err = "HTTP " + response.statusCode;
-			}
-			
-			if(err) {
-				log("Couldn't request badge page: " + err);
+			if(err || response.statusCode != 200) {
+				log("Couldn't request badge page: " + (err || "HTTP error " + response.statusCode));
 				checkCardsInSeconds(30);
 				return;
 			}
