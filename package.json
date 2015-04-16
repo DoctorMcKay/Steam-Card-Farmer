@@ -16,5 +16,6 @@
 		"steamstuff": "1.1.x",
 		"prompt": "0.2.x",
 		"request": "2.51.x"
-	}
+	},
+	"license": "MIT"
 }
