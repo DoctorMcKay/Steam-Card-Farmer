@@ -90,7 +90,7 @@ client.on('error', function(e) {
 });
 
 client._handlers[Steam.EMsg.ClientItemAnnouncements] = function(data) {
-	var proto = Steam.Internal.CMsgClientItemAnnouncements.parse(data);
+	var proto = Steam.Internal.CMsgClientItemAnnouncements.decode(data);
 	if(proto.countNewItems === 0) {
 		return;
 	}
