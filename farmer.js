@@ -80,6 +80,10 @@ client.on('webSessionID', function(sessionID) {
 });
 
 client.on('error', function(e) {
+	if(e.eresult == Steam.EResult.AccountLogonDenied || e.eresult == Steam.EResult.AccountLogonDeniedNeedTwoFactorCode) {
+		return; // SteamStuff handles it
+	}
+	
 	log("Error: " + e);
 	setTimeout(function() {
 		client.logOn({
