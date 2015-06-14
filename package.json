@@ -1,7 +1,7 @@
 {
 	"name": "steam-card-farmer",
 	"description": "Automatically farms card drops for Steam games you own with remaining drops",
-	"version": "1.3.3",
+	"version": "1.4.0",
 	"bin": {
 		"steamcardfarmer": "./farmer.js"
 	},
