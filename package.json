@@ -12,7 +12,7 @@
 	},
 	"dependencies": {
 		"cheerio": "0.18.x",
-		"steam": "0.6.x",
+		"steam": "https://github.com/DoctorMcKay/node-steam/releases/download/v0.6.8-mckay1/steam-0.6.8-mckay1.tgz",
 		"steamstuff": "1.1.x",
 		"prompt": "0.2.x",
 		"request": "2.51.x"

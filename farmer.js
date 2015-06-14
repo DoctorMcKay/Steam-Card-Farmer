@@ -30,6 +30,8 @@ function log(message) {
 var g_Username;
 var g_Password;
 
+var g_AppTypes;
+
 var argsStartIdx = 2;
 if(process.argv[0] == 'steamcardfarmer') {
 	argsStartIdx = 1;
@@ -108,7 +110,11 @@ function checkCardApps() {
 		clearTimeout(g_CheckTimer);
 	}
 	
-	log("Checking card drops...");
+	if(!g_AppTypes) {
+		log("Checking app data...");
+	} else {
+		log("Checking card drops...");
+	}
 	
 	client.webLogOn(function(cookies) {
 		cookies.forEach(function(cookie) {
@@ -128,9 +134,26 @@ function checkCardApps() {
 			
 			var $ = Cheerio.load(body);
 			var infolines = $('.progress_info_bold');
+			
+			var appids = [];
+			
 			for(var i = 0; i < infolines.length; i++) {
 				var match = $(infolines[i]).text().match(/(\d+) card drops? remaining/);
-				if(!match || !parseInt(match[1], 10)) {
+				
+				var href = $(infolines[i]).parent().find('.badge_title_playgame a').attr('href');
+				if(!href) {
+					continue;
+				}
+				
+				var urlparts = href.split('/');
+				var appid = urlparts[urlparts.length - 1];
+				
+				if(!g_AppTypes) {
+					appids.push(parseInt(appid, 10));
+					continue;
+				}
+				
+				if(!match || !parseInt(match[1], 10) || (g_AppTypes[appid] && g_AppTypes[appid] == 'Config')) {
 					continue;
 				}
 				
@@ -139,8 +162,6 @@ function checkCardApps() {
 				
 				if(!appLaunched) {
 					appLaunched = true;
-					var urlparts = $(infolines[i]).parent().find('.badge_title_playgame a').attr('href').split('/');
-					var appid = urlparts[urlparts.length - 1];
 					
 					var title = $(infolines[i]).parent().parent().find('.badge_title');
 					title.find('.badge_view_details').remove();
@@ -151,11 +172,23 @@ function checkCardApps() {
 				}
 			}
 			
-			log(totalDropsLeft + " card drop" + (totalDropsLeft == 1 ? '' : 's') + " remaining across " + appsWithDrops + " app" + (appsWithDrops == 1 ? '' : 's'));
-			if(totalDropsLeft == 0) {
-				shutdown(0);
+			if(!g_AppTypes) {
+				client.picsGetProductInfo(appids, [], function(response) {
+					g_AppTypes = {};
+					
+					for(var appid in response.apps) {
+						g_AppTypes[appid] = response.apps[appid].data.appinfo.common.type;
+					}
+					
+					checkCardApps();
+				});
 			} else {
-				checkCardsInSeconds(1200); // 20 minutes to be safe, we should automatically check when Steam notifies us that we got a new item anyway
+				log(totalDropsLeft + " card drop" + (totalDropsLeft == 1 ? '' : 's') + " remaining across " + appsWithDrops + " app" + (appsWithDrops == 1 ? '' : 's'));
+				if(totalDropsLeft == 0) {
+					shutdown(0);
+				} else {
+					checkCardsInSeconds(1200); // 20 minutes to be safe, we should automatically check when Steam notifies us that we got a new item anyway
+				}
 			}
 		});
 	});
