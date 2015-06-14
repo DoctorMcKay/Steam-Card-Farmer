@@ -6,7 +6,7 @@ Designed for advanced users.
 
 # Installation
 
-- Install [Node.js](https://nodejs.org) or [io.js](https://iojs.org)
+- Install [Node.js](https://nodejs.org) (v0.12.0 or later) or [io.js](https://iojs.org)
 - Run `sudo npm install -g steam-card-farmer` (Linux) or `npm install -g steam-card-farmer` from an [elevated command prompt](http://pcsupport.about.com/od/commandlinereference/f/elevated-command-prompt.htm) (Windows).
 
 # Usage
