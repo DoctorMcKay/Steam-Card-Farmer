@@ -358,7 +358,7 @@ function checkCardApps() {
 			for(var i = 0; i < infolines.length; i++) {
 				var match = $(infolines[i]).text().match(/(\d+) card drops? remaining/);
 				
-				var href = $(infolines[i]).parent().find('.badge_title_playgame a').attr('href');
+				var href = $(infolines[i]).closest('.badge_row').find('.badge_title_playgame a').attr('href');
 				if(!href) {
 					continue;
 				}
@@ -376,7 +376,7 @@ function checkCardApps() {
 				if(!appLaunched) {
 					appLaunched = true;
 					
-					var title = $(infolines[i]).parent().parent().find('.badge_title');
+					var title = $(infolines[i]).closest('.badge_row').find('.badge_title');
 					title.find('.badge_view_details').remove();
 					title = title.text().trim();
 					
