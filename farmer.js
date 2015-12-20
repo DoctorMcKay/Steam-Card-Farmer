@@ -183,7 +183,7 @@ function checkMinPlaytime() {
 				}
 				
 				// Find out if we have drops left
-				var drops = row.find('.progress_info_bold').text().match(/(\d+) card drops remaining/);
+				var drops = row.find('.progress_info_bold').text().match(/(\d+) card drops? remaining/);
 				if(!drops) {
 					return;
 				}
