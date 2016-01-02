@@ -11,11 +11,11 @@
 		"url": "https://github.com/DoctorMcKay/Steam-Card-Farmer"
 	},
 	"dependencies": {
-		"cheerio": "0.18.x",
-		"steam": "https://github.com/DoctorMcKay/node-steam/releases/download/v0.6.8-mckay1/steam-0.6.8-mckay1.tgz",
-		"steamstuff": "1.1.x",
-		"prompt": "0.2.x",
-		"request": "2.51.x"
+		"cheerio": "^0.18.0",
+		"steam-user": "^3.3.0",
+		"steam-client": "^1.1.1",
+		"prompt": "^0.2.14",
+		"request": "^2.51.0"
 	},
 	"license": "MIT"
 }

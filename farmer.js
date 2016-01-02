@@ -1,18 +1,18 @@
 #!/usr/bin/env node
 
-var Steam = require('steam');
-var SteamStuff = require('steamstuff');
+var SteamUser = require('steam-user');
+var Steam = SteamUser.Steam;
 var prompt = require('prompt');
 var request = require('request');
 var Cheerio = require('cheerio');
 
-var client = new Steam.SteamClient();
-SteamStuff(Steam, client);
+var client = new SteamUser({"enablePicsCache": true});
 
 var g_Jar = request.jar();
 request = request.defaults({"jar": g_Jar});
 
 var g_CheckTimer;
+var g_OwnedApps = [];
 
 function log(message) {
 	var date = new Date();
@@ -25,14 +25,7 @@ function log(message) {
 	}
 	
 	console.log(time[0] + '-' + time[1] + '-' + time[2] + ' ' + time[3] + ':' + time[4] + ':' + time[5] + ' - ' + message);
-};
-
-var g_Username;
-var g_Password;
-
-var g_PackageInfo = {};
-var g_OwnedApps = [];
-var g_HasWebSessionID = false;
+}
 
 var argsStartIdx = 2;
 if(process.argv[0] == 'steamcardfarmer') {
@@ -50,7 +43,7 @@ if(process.argv.length == argsStartIdx + 2) {
 	prompt.get({
 		"properties": {
 			"username": {
-				"required": true,
+				"required": true
 			},
 			"password": {
 				"hidden": true,
@@ -69,9 +62,6 @@ if(process.argv.length == argsStartIdx + 2) {
 			"accountName": result.username,
 			"password": result.password
 		});
-	
-	g_Username = result.username;
-	g_Password = result.password;
 	});
 }
 
@@ -80,49 +70,20 @@ client.on('loggedOn', function() {
 	log("Waiting for license info...");
 });
 
-client.on('webSessionID', function(sessionID) {
-	g_HasWebSessionID = true;
-});
-
-client.on('licenses', function(licenses) {
-	log("Got " + licenses.length + " owned licenses. Requesting package info...");
-	
-	var timeoutSet = false;
-	client.picsGetProductInfo([], licenses.map(function(license) { return license.packageId; }), function(response) {
-		Object.keys(response.packages).forEach(function(pkg) {
-			pkg = response.packages[pkg];
-			g_PackageInfo[pkg.packageid] = pkg.data[pkg.packageid];
-		});
-		
-		if(!timeoutSet) {
-			setTimeout(checkMinPlaytime, 2000);
-			timeoutSet = true;
-		}
-	});
+client.once('appOwnershipCached', function() {
+	log("Got app ownership info");
+	checkMinPlaytime();
 });
 
 client.on('error', function(e) {
-	if(e.eresult == Steam.EResult.AccountLogonDenied || e.eresult == Steam.EResult.AccountLogonDeniedNeedTwoFactorCode) {
-		return; // SteamStuff handles it
-	}
-	
 	log("Error: " + e);
-	setTimeout(function() {
-		client.logOn({
-			"accountName": g_Username,
-			"password": g_Password
-		});
-	}, 10000);
 });
 
 function checkMinPlaytime() {
-	if(!g_HasWebSessionID) {
-		setTimeout(checkMinPlaytime, 1000);
-		return;
-	}
-	
 	log("Checking app playtime...");
-	client.webLogOn(function(cookies) {
+
+	client.webLogOn();
+	client.once('webSession', function(sessionID, cookies) {
 		cookies.forEach(function(cookie) {
 			g_Jar.setCookie(cookie, 'https://steamcommunity.com');
 		});
@@ -135,6 +96,14 @@ function checkMinPlaytime() {
 			}
 			
 			var lowHourApps = [];
+			var ownedPackages = client.licenses.map(function(license) {
+				var pkg = client.picsCache.packages[license.package_id].packageinfo;
+				pkg.time_created = license.time_created;
+				pkg.payment_method = license.payment_method;
+				return pkg;
+			}).filter(function(pkg) {
+				return !(pkg.extended && pkg.extended.freeweekend);
+			});
 			
 			var $ = Cheerio.load(body);
 			$('.badge_row').each(function() {
@@ -150,37 +119,27 @@ function checkMinPlaytime() {
 				}
 				
 				var appid = parseInt(match[1], 10);
-				
-				// Check if app is owned
-				var owned = false;
-				var newlyPurchased = false;
-				
-				client.licenses.forEach(function(license) {
-					var pkg = g_PackageInfo[license.packageId];
-					if(pkg.extended && pkg.extended.freeweekend) {
-						return;
-					}
-					
-					for(var i in pkg.appids) {
-						if(pkg.appids[i] == appid) {
-							owned = true;
-							
-							var timeCreatedAgo = Math.floor(Date.now() / 1000) - license.timeCreated;
-							if(timeCreatedAgo < (60 * 60 * 24 * 14) && [Steam.EPaymentMethod.ActivationCode, Steam.EPaymentMethod.GuestPass, Steam.EPaymentMethod.Complimentary].indexOf(license.paymentMethod) == -1) {
-								newlyPurchased = true;
-							}
-						}
-					}
-				});
-				
+
 				var name = row.find('.badge_title');
 				name.find('.badge_view_details').remove();
 				name = name.text().replace(/\n/g, '').replace(/\r/g, '').replace(/\t/g, '').trim();
-				
-				if(!owned) {
+
+				// Check if app is owned
+				if(!client.ownsApp(appid)) {
 					log("Skipping app " + appid + " \"" + name + "\", not owned");
 					return;
 				}
+
+				var newlyPurchased = false;
+				// Find the package(s) in which we own this app
+				ownedPackages.filter(function(pkg) {
+					return pkg.appids && pkg.appids.indexOf(appid) != -1;
+				}).forEach(function(pkg) {
+					var timeCreatedAgo = Math.floor(Date.now() / 1000) - pkg.time_created;
+					if(timeCreatedAgo < (60 * 60 * 24 * 14) && [Steam.EPaymentMethod.ActivationCode, Steam.EPaymentMethod.GuestPass, Steam.EPaymentMethod.Complimentary].indexOf(pkg.payment_method) == -1) {
+						newlyPurchased = true;
+					}
+				});
 				
 				// Find out if we have drops left
 				var drops = row.find('.progress_info_bold').text().match(/(\d+) card drops? remaining/);
@@ -319,15 +278,14 @@ function checkMinPlaytime() {
 	});
 }
 
-client._handlers[Steam.EMsg.ClientItemAnnouncements] = function(data) {
-	var proto = Steam.Internal.CMsgClientItemAnnouncements.decode(data);
-	if(proto.countNewItems === 0) {
+client.on('newItems', function(count) {
+	if(g_OwnedApps.length == 0 || count == 0) {
 		return;
 	}
-	
-	log("Got notification of new inventory items: " + proto.countNewItems + " new item" + (proto.countNewItems == 1 ? '' : 's'));
+
+	log("Got notification of new inventory items: " + count + " new item" + (count == 1 ? '' : 's'));
 	checkCardApps();
-};
+});
 
 function checkCardApps() {
 	if(g_CheckTimer) {
@@ -336,7 +294,8 @@ function checkCardApps() {
 	
 	log("Checking card drops...");
 	
-	client.webLogOn(function(cookies) {
+	client.webLogOn();
+	client.once('webSession', function(sessionID, cookies) {
 		cookies.forEach(function(cookie) {
 			g_Jar.setCookie(cookie, 'https://steamcommunity.com');
 		});
@@ -381,7 +340,7 @@ function checkCardApps() {
 					title = title.text().trim();
 					
 					log("Idling app " + appid + " \"" + title + "\" - " + match[1] + " drop" + (match[1] == 1 ? '' : 's') + " remaining");
-					client.gamesPlayed([parseInt(appid, 10)]);
+					client.gamesPlayed(parseInt(appid, 10));
 				}
 			}
 			
@@ -405,8 +364,11 @@ process.on('SIGINT', function() {
 });
 
 function shutdown(code) {
-	client.gamesPlayed([]);
 	client.logOff();
+	client.once('disconnected', function() {
+		process.exit(code);
+	});
+
 	setTimeout(function() {
 		process.exit(code);
 	}, 500);
