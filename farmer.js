@@ -99,8 +99,8 @@ function checkMinPlaytime(g_Page) {
 			
 			g_Html = g_Html+body;
 			var $ = Cheerio.load(g_Html);
-			log("Page "+g_Page+" Loaded!")
-			;
+			log("Page "+g_Page+" Loaded!");
+			
 			if ( $('.badge_row').length/250 == Math.round($('.badge_row').length/250) ){
 						g_Page++;
 						log("Checking page "+g_Page+" for drops");
