@@ -104,7 +104,7 @@ function checkMinPlaytime(g_Page) {
 			if ( $('.badge_row').length/250 == Math.round($('.badge_row').length/250) ){
 						g_Page++;
 						log("Checking page "+g_Page+" for drops");
-						checkMinPlaytime(g_Page});	
+						checkMinPlaytime(g_Page);	
 						return;
 			}
 			
