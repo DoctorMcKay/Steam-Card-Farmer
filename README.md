@@ -21,7 +21,7 @@ If you have purchased a game in the past 14 days, **idling it will waive your ri
 
 It'll automatically switch through all games you have with remaining card drops (it checks every 20 minutes or immediately when a new item is received). One could theoretically mass-idle all games at once, but it takes just as long and this way doesn't rack up unnecessary fake playtime.
 
-If you have more than 250 games/badges, **this will only idle your [first page](https://steamcommunity.com/my/badges)**. Because I made this application only for myself and shared it just because, I have no plans to add things that I will not use. The best way to get me to support multiple pages is to [buy me games](https://steamcommunity.com/id/DoctorMcKay). Pull requests welcome.
+If you want to support the project [buy me games](https://steamcommunity.com/id/DoctorMcKay). Pull requests welcome.
 
 ## License
 
