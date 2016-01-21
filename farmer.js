@@ -11,6 +11,9 @@ var client = new SteamUser({"enablePicsCache": true});
 var g_Jar = request.jar();
 request = request.defaults({"jar": g_Jar});
 
+var page = 1;
+var html;
+
 var g_CheckTimer;
 var g_OwnedApps = [];
 
@@ -72,15 +75,14 @@ client.on('loggedOn', function() {
 
 client.once('appOwnershipCached', function() {
 	log("Got app ownership info");
-	checkMinPlaytime();
+	checkMinPlaytime(page);
 });
 
 client.on('error', function(e) {
 	log("Error: " + e);
 });
 
-function checkMinPlaytime() {
-	log("Checking app playtime...");
+function checkMinPlaytime(page) {
 
 	client.webLogOn();
 	client.once('webSession', function(sessionID, cookies) {
@@ -88,12 +90,27 @@ function checkMinPlaytime() {
 			g_Jar.setCookie(cookie, 'https://steamcommunity.com');
 		});
 		
-		request("https://steamcommunity.com/my/badges/", function(err, response, body) {
+		request("https://steamcommunity.com/my/badges/?p="+page, function(err, response, body) {
 			if(err || response.statusCode != 200) {
 				log("Couldn't request badge page: " + (err || "HTTP error " + response.statusCode) + ". Retrying in 10 seconds...");
-				setTimeout(checkMinPlaytime, 10000);
+				setTimeout(checkMinPlaytime(page), 10000);
 				return;
 			}
+			
+			html = html+body;
+			var $ = Cheerio.load(html);
+			
+			
+			if ( $('.badge_row').length/250 == Math.round($('.badge_row').length/250) ){
+						log("Page "+page+" Complete!");
+						page++;
+						log("Checking page "+page+" for drops");
+						checkMinPlaytime(page);	
+						return;
+			}
+			
+			log(""+$('.badge_row').length+" apps with badges found");
+			log("Checking app playtime...");
 			
 			var lowHourApps = [];
 			var ownedPackages = client.licenses.map(function(license) {
@@ -105,7 +122,6 @@ function checkMinPlaytime() {
 				return !(pkg.extended && pkg.extended.freeweekend);
 			});
 			
-			var $ = Cheerio.load(body);
 			$('.badge_row').each(function() {
 				var row = $(this);
 				var overlay = row.find('.badge_row_overlay');
