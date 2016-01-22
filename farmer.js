@@ -11,10 +11,6 @@ var client = new SteamUser({"enablePicsCache": true});
 var g_Jar = request.jar();
 request = request.defaults({"jar": g_Jar});
 
-var g_Page = 1;
-var g_Html;
-
-var g_CheckTimer;
 var g_OwnedApps = [];
 
 function log(message) {
@@ -75,36 +71,39 @@ client.on('loggedOn', function() {
 
 client.once('appOwnershipCached', function() {
 	log("Got app ownership info");
-	checkMinPlaytime(g_Page);
+	checkMinPlaytime(1);
 });
 
 client.on('error', function(e) {
 	log("Error: " + e);
 });
 
-function checkMinPlaytime(g_Page) {
-
+function checkMinPlaytime(page,html) {
+	if (!page || page==1){
+		var page=1;
+		var html="";
+	}
 	client.webLogOn();
 	client.once('webSession', function(sessionID, cookies) {
 		cookies.forEach(function(cookie) {
 			g_Jar.setCookie(cookie, 'https://steamcommunity.com');
 		});
 		
-		request("https://steamcommunity.com/my/badges/?p="+g_Page, function(err, response, body) {
+		request("https://steamcommunity.com/my/badges/?p="+page, function(err, response, body) {
 			if(err || response.statusCode != 200) {
 				log("Couldn't request badge page: " + (err || "HTTP error " + response.statusCode) + ". Retrying in 10 seconds...");
-				setTimeout(checkMinPlaytime(g_Page), 10000);
+				setTimeout(checkMinPlaytime(page,html), 10000);
 				return;
 			}
 			
-			g_Html = g_Html+body;
-			var $ = Cheerio.load(g_Html);
-			log("Page "+g_Page+" Loaded!");
+			html = html+body;
+			var $ = Cheerio.load(html);
+			log("Page "+page+" Loaded!");
 			
-			if ( $('.badge_row').length/250 == Math.round($('.badge_row').length/250) ){
-						g_Page++;
-						log("Checking page "+g_Page+" for drops");
-						checkMinPlaytime(g_Page);	
+			if ( $('.badge_row').length/250 == Math.round($('.badge_row').length/250)  && $('.badge_row').length !== 0 ){
+						page++;
+						log("Checking page "+page+" for drops");
+						checkMinPlaytime(page,html);	
 						return;
 			}
 			
@@ -302,12 +301,13 @@ client.on('newItems', function(count) {
 	checkCardApps();
 });
 
-function checkCardApps() {
-	if(g_CheckTimer) {
-		clearTimeout(g_CheckTimer);
+function checkCardApps(page,html) {
+	
+	if (!page || page==1){
+		var page=1;
+		var html="";
 	}
 	
-	log("Checking card drops...");
 	
 	client.webLogOn();
 	client.once('webSession', function(sessionID, cookies) {
@@ -315,18 +315,33 @@ function checkCardApps() {
 			g_Jar.setCookie(cookie, 'https://steamcommunity.com');
 		});
 		
-		request("https://steamcommunity.com/my/badges/", function(err, response, body) {
+		request("https://steamcommunity.com/my/badges/?p="+page, function(err, response, body) {
 			if(err || response.statusCode != 200) {
 				log("Couldn't request badge page: " + (err || "HTTP error " + response.statusCode));
-				checkCardsInSeconds(30);
+				setTimeout(function(){
+					checkCardApps(page,html);
+				}, (10 * 1000));
 				return;
 			}
+			
+			
+			html = html+body;
+			var $ = Cheerio.load(html);
+			log("Page "+page+" Loaded "+$('.badge_row').length+" apps");
+			
+			if ( $('.badge_row').length/250 == Math.round($('.badge_row').length/250) && $('.badge_row').length !== 0){
+				page++;
+				log("Checking page "+page+" for apps");
+				checkCardApps(page,html);	
+				return;
+			}
+			
+			log("Checking card drops...");
 			
 			var appsWithDrops = 0;
 			var totalDropsLeft = 0;
 			var appLaunched = false;
 			
-			var $ = Cheerio.load(body);
 			var infolines = $('.progress_info_bold');
 			
 			for(var i = 0; i < infolines.length; i++) {
@@ -363,15 +378,14 @@ function checkCardApps() {
 			if(totalDropsLeft == 0) {
 				shutdown(0);
 			} else {
-				checkCardsInSeconds(1200); // 20 minutes to be safe, we should automatically check when Steam notifies us that we got a new item anyway
+				setTimeout(function(){
+					checkCardApps();
+				}, (1200 * 1000));// 20 minutes to be safe, we should automatically check when Steam notifies us that we got a new item anyway
 			}
 		});
 	});
 }
 
-function checkCardsInSeconds(seconds) {
-	g_CheckTimer = setTimeout(checkCardApps, (1000 * seconds));
-}
 
 process.on('SIGINT', function() {
 	log("Logging off and shutting down");
