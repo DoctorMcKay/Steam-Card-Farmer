@@ -10,7 +10,8 @@ var client = new SteamUser({"enablePicsCache": true});
 
 var g_Jar = request.jar();
 request = request.defaults({"jar": g_Jar});
-
+var g_Page = 1;
+var g_CheckTimer;
 var g_OwnedApps = [];
 
 function log(message) {
@@ -71,42 +72,28 @@ client.on('loggedOn', function() {
 
 client.once('appOwnershipCached', function() {
 	log("Got app ownership info");
-	checkMinPlaytime(1);
+	checkMinPlaytime();
 });
 
 client.on('error', function(e) {
 	log("Error: " + e);
 });
 
-function checkMinPlaytime(page,html) {
-	if (!page || page==1){
-		var page=1;
-		var html="";
-	}
+function checkMinPlaytime() {
+	log("Checking app playtime...");
+
 	client.webLogOn();
 	client.once('webSession', function(sessionID, cookies) {
 		cookies.forEach(function(cookie) {
 			g_Jar.setCookie(cookie, 'https://steamcommunity.com');
 		});
 		
-		request("https://steamcommunity.com/my/badges/?p="+page, function(err, response, body) {
+		request("https://steamcommunity.com/my/badges/?p="+g_Page, function(err, response, body) {
 			if(err || response.statusCode != 200) {
 				log("Couldn't request badge page: " + (err || "HTTP error " + response.statusCode) + ". Retrying in 10 seconds...");
-				setTimeout(checkMinPlaytime(page,html), 10000);
+				setTimeout(checkMinPlaytime, 10000);
 				return;
 			}
-			
-			html = html+body;
-			var $ = Cheerio.load(html);
-			
-			if ( $('.badge_row').length/250 == Math.round($('.badge_row').length/250)  && $('.badge_row').length !== 0 ){
-						page++;
-						checkMinPlaytime(page,html);	
-						return;
-			}
-			
-			log(""+$('.badge_row').length+" apps with badges found");
-			log("Checking app playtime...");
 			
 			var lowHourApps = [];
 			var ownedPackages = client.licenses.map(function(license) {
@@ -118,6 +105,7 @@ function checkMinPlaytime(page,html) {
 				return !(pkg.extended && pkg.extended.freeweekend);
 			});
 			
+			var $ = Cheerio.load(body);
 			$('.badge_row').each(function() {
 				var row = $(this);
 				var overlay = row.find('.badge_row_overlay');
@@ -299,13 +287,12 @@ client.on('newItems', function(count) {
 	checkCardApps();
 });
 
-function checkCardApps(page,html) {
-	
-	if (!page || page==1){
-		var page=1;
-		var html="";
+function checkCardApps() {
+	if(g_CheckTimer) {
+		clearTimeout(g_CheckTimer);
 	}
 	
+	log("Checking card drops...");
 	
 	client.webLogOn();
 	client.once('webSession', function(sessionID, cookies) {
@@ -313,31 +300,18 @@ function checkCardApps(page,html) {
 			g_Jar.setCookie(cookie, 'https://steamcommunity.com');
 		});
 		
-		request("https://steamcommunity.com/my/badges/?p="+page, function(err, response, body) {
+		request("https://steamcommunity.com/my/badges/?p="+g_Page, function(err, response, body) {
 			if(err || response.statusCode != 200) {
 				log("Couldn't request badge page: " + (err || "HTTP error " + response.statusCode));
-				setTimeout(function(){
-					checkCardApps(page,html);
-				}, (10 * 1000));
+				checkCardsInSeconds(30);
 				return;
 			}
-			
-			
-			html = html+body;
-			var $ = Cheerio.load(html);
-			
-			if ( $('.badge_row').length/250 == Math.round($('.badge_row').length/250) && $('.badge_row').length !== 0){
-				page++;
-				checkCardApps(page,html);	
-				return;
-			}
-			
-			log("Checking card drops...");
 			
 			var appsWithDrops = 0;
 			var totalDropsLeft = 0;
 			var appLaunched = false;
 			
+			var $ = Cheerio.load(body);
 			var infolines = $('.progress_info_bold');
 			
 			for(var i = 0; i < infolines.length; i++) {
@@ -370,18 +344,28 @@ function checkCardApps(page,html) {
 				}
 			}
 			
-			log(totalDropsLeft + " card drop" + (totalDropsLeft == 1 ? '' : 's') + " remaining across " + appsWithDrops + " app" + (appsWithDrops == 1 ? '' : 's'));
+			log(totalDropsLeft + " card drop" + (totalDropsLeft == 1 ? '' : 's') + " remaining across " + appsWithDrops + " app" + (appsWithDrops == 1 ? '' : 's') + " (Page " + g_Page + ")");
 			if(totalDropsLeft == 0) {
-				shutdown(0);
+				if ($('.badge_row').length/250 == Math.round($('.badge_row').length/250)){
+					log("No drops remaining on page "+g_Page);
+					g_Page++;
+					log("Checking page "+g_Page);
+					checkMinPlaytime();
+				} else {
+					log("All card drops recieved!");
+					log("Shutting Down.")
+					shutdown(0);
+				}
 			} else {
-				setTimeout(function(){
-					checkCardApps();
-				}, (1200 * 1000));// 20 minutes to be safe, we should automatically check when Steam notifies us that we got a new item anyway
+				checkCardsInSeconds(1200); // 20 minutes to be safe, we should automatically check when Steam notifies us that we got a new item anyway
 			}
 		});
 	});
 }
 
+function checkCardsInSeconds(seconds) {
+	g_CheckTimer = setTimeout(checkCardApps, (1000 * seconds));
+}
 
 process.on('SIGINT', function() {
 	log("Logging off and shutting down");
