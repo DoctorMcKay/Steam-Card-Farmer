@@ -98,11 +98,9 @@ function checkMinPlaytime(page,html) {
 			
 			html = html+body;
 			var $ = Cheerio.load(html);
-			log("Page "+page+" Loaded!");
 			
 			if ( $('.badge_row').length/250 == Math.round($('.badge_row').length/250)  && $('.badge_row').length !== 0 ){
 						page++;
-						log("Checking page "+page+" for drops");
 						checkMinPlaytime(page,html);	
 						return;
 			}
@@ -327,11 +325,9 @@ function checkCardApps(page,html) {
 			
 			html = html+body;
 			var $ = Cheerio.load(html);
-			log("Page "+page+" Loaded "+$('.badge_row').length+" apps");
 			
 			if ( $('.badge_row').length/250 == Math.round($('.badge_row').length/250) && $('.badge_row').length !== 0){
 				page++;
-				log("Checking page "+page+" for apps");
 				checkCardApps(page,html);	
 				return;
 			}
