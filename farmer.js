@@ -10,7 +10,7 @@ var client = new SteamUser({"enablePicsCache": true});
 
 var g_Jar = request.jar();
 request = request.defaults({"jar": g_Jar});
-
+var g_Page = 1;
 var g_CheckTimer;
 var g_OwnedApps = [];
 
@@ -88,7 +88,7 @@ function checkMinPlaytime() {
 			g_Jar.setCookie(cookie, 'https://steamcommunity.com');
 		});
 		
-		request("https://steamcommunity.com/my/badges/", function(err, response, body) {
+		request("https://steamcommunity.com/my/badges/?p="+g_Page, function(err, response, body) {
 			if(err || response.statusCode != 200) {
 				log("Couldn't request badge page: " + (err || "HTTP error " + response.statusCode) + ". Retrying in 10 seconds...");
 				setTimeout(checkMinPlaytime, 10000);
@@ -300,7 +300,7 @@ function checkCardApps() {
 			g_Jar.setCookie(cookie, 'https://steamcommunity.com');
 		});
 		
-		request("https://steamcommunity.com/my/badges/", function(err, response, body) {
+		request("https://steamcommunity.com/my/badges/?p="+g_Page, function(err, response, body) {
 			if(err || response.statusCode != 200) {
 				log("Couldn't request badge page: " + (err || "HTTP error " + response.statusCode));
 				checkCardsInSeconds(30);
@@ -344,9 +344,18 @@ function checkCardApps() {
 				}
 			}
 			
-			log(totalDropsLeft + " card drop" + (totalDropsLeft == 1 ? '' : 's') + " remaining across " + appsWithDrops + " app" + (appsWithDrops == 1 ? '' : 's'));
+			log(totalDropsLeft + " card drop" + (totalDropsLeft == 1 ? '' : 's') + " remaining across " + appsWithDrops + " app" + (appsWithDrops == 1 ? '' : 's') + " (Page " + g_Page + ")");
 			if(totalDropsLeft == 0) {
-				shutdown(0);
+				if ($('.badge_row').length/250 == Math.round($('.badge_row').length/250)){
+					log("No drops remaining on page "+g_Page);
+					g_Page++;
+					log("Checking page "+g_Page);
+					checkMinPlaytime();
+				} else {
+					log("All card drops recieved!");
+					log("Shutting Down.")
+					shutdown(0);
+				}
 			} else {
 				checkCardsInSeconds(1200); // 20 minutes to be safe, we should automatically check when Steam notifies us that we got a new item anyway
 			}
