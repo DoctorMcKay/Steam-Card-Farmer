@@ -23,12 +23,13 @@
             <span>Steam Guard Email Code</span>
             <input type="text" id="auth_code" class="uppercase" maxlength="5" />
         </label>
-        <label class="hidden" id="2fa_code_outer">
+        <label class="hidden" id="two_factor_code_outer">
             <span>Steam Guard App Code</span>
-            <input type="text" id="2fa_code" class="uppercase" maxlength="6" />
+            <input type="text" id="two_factor_code" class="uppercase" maxlength="6" />
         </label>
         <button type="submit" id="submit-btn" disabled>Sign In to Steam</button>
     </form>
+    <div id="logon-error" class="error"></div>
 </body>
 <script src="../js/global.js"></script>
 <script src="../js/login.js"></script>

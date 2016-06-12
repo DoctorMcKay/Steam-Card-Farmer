@@ -52,3 +52,7 @@ form button[type=submit] {
 .uppercase {
     text-transform: uppercase;
 }
+
+.error {
+    color: #c00;
+}

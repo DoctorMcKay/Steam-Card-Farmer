@@ -1,8 +1,16 @@
+// Third-party modules
+var SteamUser = require('steam-user');
+var SteamCommunity = require('steamcommunity');
+
 var Electron = require('electron');
 var BrowserWindow = Electron.BrowserWindow;
 var app = Electron.app;
 
 var g_CurrentWindow;
+
+// Set up stuff that needs to be accessed across windows
+exports.steamClient = new SteamUser({"promptSteamGuardCode": false});
+exports.steamCommunity = new SteamCommunity();
 
 app.on('ready', () => {
 	// Electron has initialized
