@@ -179,7 +179,7 @@ function checkMinPlaytime() {
 				}
 			});
 			
-			if(lowHourApps.length > 1) {
+			if(lowHourApps.length > 0) {
 				var minPlaytime = 2.0;
 				var newApps = [];
 				
