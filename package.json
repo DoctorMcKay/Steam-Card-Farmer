@@ -14,5 +14,9 @@
 		"request": "^2.51.0"
 	},
 	"license": "GPLv3",
+	"scripts": {
+		"start": "electron .",
+		"preinstall": "npm list electron-prebuilt -g || npm install electron-prebuilt -g"
+	},
 	"main": "main.js"
 }
