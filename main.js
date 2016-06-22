@@ -2,11 +2,11 @@
 var SteamUser = require('steam-user');
 var SteamCommunity = require('steamcommunity');
 
-var Electron = require('electron');
-var BrowserWindow = Electron.BrowserWindow;
-var app = Electron.app;
+Electron = require('electron');
+BrowserWindow = Electron.BrowserWindow;
+app = Electron.app;
 
-var g_CurrentWindow;
+g_CurrentWindow='';
 
 // Set up stuff that needs to be accessed across windows
 exports.steamClient = new SteamUser({"promptSteamGuardCode": false});
@@ -14,26 +14,30 @@ exports.steamCommunity = new SteamCommunity();
 
 app.on('ready', () => {
 	// Electron has initialized
-	openWindow("Login", 400, "login.html");
+	openWindow("index.html");
 });
 
-function openWindow(title, height, filename) {
+function openWindow(filename) {
 	if (g_CurrentWindow) {
 		throw new Error("A window is already open");
 	}
 
 	g_CurrentWindow = new BrowserWindow({
-		"width": 832, // 8px of body margin on each side
-		"height": height,
-		"title": title + " - Steam Card Farmer",
-		"resizable": false}
-	);
+		"frame": false,
+		"titleBarStyle": "hidden",
+		"width": 350,
+		"height": 500,
+		"resizable": false,
+		"position": "center",
+		"min_width": 350,
+		"min_height": 500,
+		"max_width": 350,
+		"title": "Steam Card Farmer"
+	});
 
 	g_CurrentWindow.setMenu(null);
 	g_CurrentWindow.loadURL(`file://${__dirname}/html/${filename}`);
 	g_CurrentWindow.on('closed', () => {
 		g_CurrentWindow = null;
 	});
-
-	g_CurrentWindow.webContents.openDevTools();
 }
