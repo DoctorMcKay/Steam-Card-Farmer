@@ -1,16 +1,21 @@
-#!/usr/bin/env node
 
 var SteamUser = require('steam-user');
 var Steam = SteamUser.Steam;
-var prompt = require('prompt');
 var request = require('request');
 var Cheerio = require('cheerio');
+var fs = require("fs");
 
-var client = new SteamUser({"enablePicsCache": true});
+var client = new SteamUser({"enablePicsCache": true,"promptSteamGuardCode":false});
+
+var Electron = require('electron');
+var Main = Electron.remote.require('./main.js');
 
 var g_Jar = request.jar();
 request = request.defaults({"jar": g_Jar});
 var g_Page = 1;
+var g_Start;
+var g_Progress;
+var g_TotalProgress;
 var g_CheckTimer;
 var g_OwnedApps = [];
 
@@ -27,47 +32,56 @@ function log(message) {
 	console.log(time[0] + '-' + time[1] + '-' + time[2] + ' ' + time[3] + ':' + time[4] + ':' + time[5] + ' - ' + message);
 }
 
-var argsStartIdx = 2;
-if(process.argv[0] == 'steamcardfarmer') {
-	argsStartIdx = 1;
+
+
+function login() {
+		$('.Window').fadeOut(250);
+		var username = $("#username").val();
+		var password = $("#password").val();
+		$('#LoadingWindow p').html("Initializing Steam client...");
+		$('#LoadingWindow').fadeIn(250);
+		//Clear Password Field
+		log("Initializing Steam client...");
+		//Login to steam client
+		client.logOn({
+			"accountName": username,
+			"password": password
+		});
+		$("#password").val("");
 }
 
-if(process.argv.length == argsStartIdx + 2) {
-	log("Reading Steam credentials from command line");
-	client.logOn({
-		"accountName": process.argv[argsStartIdx],
-		"password": process.argv[argsStartIdx + 1]
+client.on('steamGuard', function(domain, callback, lastcode) {
+	if (lastcode===true){
+		$('#LoadingWindow .Error').html('<i class="fa fa-exclamation-circle"></i> Invalid Code');
+	}else{
+		$('#LoadingWindow .Error').html("");;
+	}
+	
+	if (domain != null ){
+		auth_msg = "Auth Code\nEmailed to address " + domain + ":";
+	} else {
+		auth_msg = "Mobile Auth Code:";
+	}
+	
+	$('#LoadingWindow p').html(auth_msg + '<form id="authCodeForm" ><input id="authCode" class="input-lg form-control" /><button type="submit" class="btn btn-block" >Send</button></form>');
+	$("#authCode").focus();
+	$("#authCodeForm").on("submit",function(e){
+		e.preventDefault();e.stopPropagation();
+		code = $("#authCode").val();
+		$('#LoadingWindow p').html("Initializing Steam client...");
+		callback(code);
 	});
-} else {
-	prompt.start();
-	prompt.get({
-		"properties": {
-			"username": {
-				"required": true
-			},
-			"password": {
-				"hidden": true,
-				"required": true
-			}
-		}
-	}, function(err, result) {
-		if(err) {
-			log("Error: " + err);
-			shutdown(1);
-			return;
-		}
-		
-		log("Initializing Steam client...");
-		client.logOn({
-			"accountName": result.username,
-			"password": result.password
-		});
-	});
-}
+});
 
 client.on('loggedOn', function() {
+	client.setPersona(3);
+	$('.Error').html("");
 	log("Logged into Steam!");
+	$("#AppLogout").fadeIn(250);
+	$("#AppClose").attr("onclick","client.logOff();process.exit(0);");
 	log("Waiting for license info...");
+	$('#LoadingWindow p').html("Waiting for license info...");
+	console.log(client);
 });
 
 client.once('appOwnershipCached', function() {
@@ -76,18 +90,33 @@ client.once('appOwnershipCached', function() {
 });
 
 client.on('error', function(e) {
+	$("#password").val("");
 	log("Error: " + e);
+	if(e == "Error: InvalidPassword"){
+		client.logOff();
+		$("#LoginWindow .Error").html('<i class="fa fa-exclamation-circle"></i> Wrong username/password');
+		$('.Window').fadeOut(250);
+		$("#LoginWindow").fadeIn(250);
+	} else if (e == "Error: LoggedInElsewhere" || e=="Error: LogonSessionReplaced"){
+		client.logOff();
+		$("#LoginWindow .Error").html('<i class="fa fa-exclamation-circle"></i> In Game Elsewhere!');
+		$('.Window').fadeOut(250);
+		$("#LoginWindow").fadeIn(250);
+	}else{
+		$("#LoginWindow .Error").html('<i class="fa fa-exclamation-circle"></i> '+e);
+		$('.Window').fadeOut(250);
+		$("#LoginWindow").fadeIn(250);
+	}
 });
 
-function checkMinPlaytime() {
+function checkMinPlaytime(){
 	log("Checking app playtime...");
-
+	$('#LoadingWindow p').html('Checking app playtime...');
 	client.webLogOn();
 	client.once('webSession', function(sessionID, cookies) {
 		cookies.forEach(function(cookie) {
 			g_Jar.setCookie(cookie, 'https://steamcommunity.com');
 		});
-		
 		request("https://steamcommunity.com/my/badges/?p="+g_Page, function(err, response, body) {
 			if(err || response.statusCode != 200) {
 				log("Couldn't request badge page: " + (err || "HTTP error " + response.statusCode) + ". Retrying in 10 seconds...");
@@ -104,10 +133,9 @@ function checkMinPlaytime() {
 			}).filter(function(pkg) {
 				return !(pkg.extended && pkg.extended.freeweekend);
 			});
-			
-			var $ = Cheerio.load(body);
-			$('.badge_row').each(function() {
-				var row = $(this);
+			$_ = Cheerio.load(body);
+			$_('.badge_row').each(function(i) {
+				var row = $_(this);
 				var overlay = row.find('.badge_row_overlay');
 				if(!overlay) {
 					return;
@@ -125,7 +153,7 @@ function checkMinPlaytime() {
 				name = name.text().replace(/\n/g, '').replace(/\r/g, '').replace(/\t/g, '').trim();
 
 				// Check if app is owned
-				if(!client.ownsApp(appid)) {
+				if(!client.picsCache.apps.hasOwnProperty(appid)) {
 					log("Skipping app " + appid + " \"" + name + "\", not owned");
 					return;
 				}
@@ -170,7 +198,8 @@ function checkMinPlaytime() {
 						"appid": appid,
 						"name": name,
 						"playtime": playtime,
-						"newlyPurchased": newlyPurchased
+						"newlyPurchased": newlyPurchased,
+						"icon": client.picsCache.apps[appid].appinfo.common.icon
 					});
 				}
 				
@@ -196,28 +225,12 @@ function checkMinPlaytime() {
 				var lowAppsToIdle = [];
 				
 				if(newApps.length > 0) {
-					log("=========================================================");
-					log("WARNING: Proceeding will waive your right to a refund on\nthe following apps:\n  - " + newApps.map(function(app) { return app.name; }).join("\n  - ") +
+					function getResponseNewApps(){
+						switch(prompt("WARNING: Proceeding will waive your right to a refund on\nthe following apps:\n  - " + newApps.map(function(app) { return app.name; }).join("\n  - ") +
 						"\n\nDo you wish to continue?\n" +
 						"    y = yes, idle all of these apps and lose my refund\n" +
 						"    n = no, don't idle any of these apps and keep my refund\n" +
-						"    c = choose which apps to idle");
-					
-					prompt.start();
-					prompt.get({
-						"properties": {
-							"choice": {
-								"required": true,
-								"pattern": /^[yncYNC]$/
-							}
-						}
-					}, function(err, result) {
-						if(err) {
-							log("ERROR: " + err.message);
-							return;
-						}
-						
-						switch(result.choice.toLowerCase()) {
+						"    c = choose which apps to idle").toLowerCase()) {
 							case 'y':
 								lowAppsToIdle = lowHourApps.map(function(app) { return app.appid; });
 								startErUp();
@@ -229,30 +242,24 @@ function checkMinPlaytime() {
 								break;
 							
 							case 'c':
-								var properties = {};
+								lowAppsToIdle = [];
 								lowHourApps.forEach(function(app) {
-									properties[app.appid] = {
-										"description": "Idle " + app.name + "? [y/n]",
-										"pattern": /^[ynYN]$/,
-										"required": true
-									};
-								});
-								
-								prompt.get({"properties": properties}, function(err, result) {
-									for(var appid in result) {
-										if(isNaN(parseInt(appid, 10))) {
-											continue;
-										}
-										
-										if(result[appid].toLowerCase() == 'y') {
-											lowAppsToIdle.push(parseInt(appid, 10));
-										}
+									switch(prompt("Idle " + app.name + "? [y/n]").toLowerCase()){
+										case 'y':
+											lowAppsToIdle.push(app);
+											break;
+										case 'n':
+											break;
+										default:
+											break;
 									}
-									
-									startErUp();
 								});
+								startErUp();
+							default: 
+								getResponseNewApps();
 						}
-					});
+					}
+					getResponseNewApps();
 				} else {
 					lowAppsToIdle = lowHourApps.map(function(app) { return app.appid; });
 					startErUp();
@@ -263,8 +270,13 @@ function checkMinPlaytime() {
 						checkCardApps();
 					} else {
 						g_OwnedApps = g_OwnedApps.concat(lowAppsToIdle);
+						new Notification("Steam Card Farmer",{body:"Idling " + lowAppsToIdle.length + " app" + (lowAppsToIdle.length == 1 ? '' : 's') + " up to 2 hours.\nYou likely won't receive any card drops in this time.\nThis will take " + (2.0 - minPlaytime) + " hours.",icon:"logo.png"});
+						for(i=0;i<lowAppsToIdle.length;i++){
+							$("#MultiAppsWindow ul").append('<li><div class="li-img"><img src="http://cdn.akamai.steamstatic.com/steamcommunity/public/images/apps/'+lowHourApps[i].appid+'/'+lowHourApps[i].icon+'.jpg" alt="Image Not Found" /></div><div class="li-text"><h4 class="li-head">'+lowHourApps[i].name+'</h4><p class="li-sub">'+lowHourApps[i].playtime+' hrs on record</p></div></li>');
+						}
+						$(".Window").hide(250);
+						$("#MultiAppsWindow").show(250);
 						client.gamesPlayed(lowAppsToIdle);
-						log("Idling " + lowAppsToIdle.length + " app" + (lowAppsToIdle.length == 1 ? '' : 's') + " up to 2 hours.\nYou likely won't receive any card drops in this time.\nThis will take " + (2.0 - minPlaytime) + " hours.");
 						setTimeout(function() {
 							client.gamesPlayed([]);
 							checkCardApps();
@@ -277,22 +289,39 @@ function checkMinPlaytime() {
 		});
 	});
 }
-
-client.on('newItems', function(count) {
+client.on('newItems', function(count){
 	if(g_OwnedApps.length == 0 || count == 0) {
 		return;
 	}
-
+	$('#NewItems').html(count);
+	$('#NewItems').click(function(){
+		client.webLogOn();
+		client.once('webSession', function(sessionID, cookies) {
+			cookies.forEach(function(cookie) {
+				g_Jar.setCookie(cookie, 'https://steamcommunity.com');
+			});
+		
+			request("https://steamcommunity.com/my/inventory", function(err, response, body) {
+				if(err || response.statusCode != 200) {
+					log("Couldn't request badge page: " + (err || "HTTP error " + response.statusCode) + ". Retrying in 10 seconds...");
+					setTimeout(checkMinPlaytime, 10000);
+					return;
+				}
+			});
+		});
+		$('#NewItems').html("");
+	});
 	log("Got notification of new inventory items: " + count + " new item" + (count == 1 ? '' : 's'));
 	checkCardApps();
 });
 
 function checkCardApps() {
+	$('#LoadingWindow').fadeIn(250);
 	if(g_CheckTimer) {
 		clearTimeout(g_CheckTimer);
 	}
-	
 	log("Checking card drops...");
+	$('#LoadingWindow p').html("Checking card drops...");
 	
 	client.webLogOn();
 	client.once('webSession', function(sessionID, cookies) {
@@ -311,13 +340,13 @@ function checkCardApps() {
 			var totalDropsLeft = 0;
 			var appLaunched = false;
 			
-			var $ = Cheerio.load(body);
-			var infolines = $('.progress_info_bold');
+			var $_ = Cheerio.load(body);
+			var infolines = $_('.progress_info_bold');
 			
 			for(var i = 0; i < infolines.length; i++) {
-				var match = $(infolines[i]).text().match(/(\d+) card drops? remaining/);
+				var match = $_(infolines[i]).text().match(/(\d+) card drops? remaining/);
 				
-				var href = $(infolines[i]).closest('.badge_row').find('.badge_title_playgame a').attr('href');
+				var href = $_(infolines[i]).closest('.badge_row').find('.badge_title_playgame a').attr('href');
 				if(!href) {
 					continue;
 				}
@@ -335,28 +364,32 @@ function checkCardApps() {
 				if(!appLaunched) {
 					appLaunched = true;
 					
-					var title = $(infolines[i]).closest('.badge_row').find('.badge_title');
+					var title = $_(infolines[i]).closest('.badge_row').find('.badge_title');
 					title.find('.badge_view_details').remove();
 					title = title.text().trim();
 					
-					log("Idling app " + appid + " \"" + title + "\" - " + match[1] + " drop" + (match[1] == 1 ? '' : 's') + " remaining");
+					new Notification("Steam Card Farmer",{body:"Idling \"" + title + "\"\n" + match[1] + " drop" + (match[1] == 1 ? '' : 's') + " remaining",icon:"logo.png"});
 					client.gamesPlayed(parseInt(appid, 10));
+					$('#CurrentAppWindow img').attr("src","http://cdn.akamai.steamstatic.com/steam/apps/" + appid + "/header.jpg");
+					$('#CurrentAppWindow h4').html(title);
+					$('#CurrentAppWindow p').html(match[1] + " drop" + (match[1] == 1 ? '' : 's') + " remaining");
 				}
 			}
-			
+			//fadeout loading window
 			log(totalDropsLeft + " card drop" + (totalDropsLeft == 1 ? '' : 's') + " remaining across " + appsWithDrops + " app" + (appsWithDrops == 1 ? '' : 's') + " (Page " + g_Page + ")");
 			if(totalDropsLeft == 0) {
-				if ($('.badge_row').length/250 == Math.round($('.badge_row').length/250)){
+				if ($_('.badge_row').length == 250){
 					log("No drops remaining on page "+g_Page);
 					g_Page++;
 					log("Checking page "+g_Page);
 					checkMinPlaytime();
 				} else {
-					log("All card drops recieved!");
-					log("Shutting Down.")
+					new Notification("Steam Card Farmer",{body:"All card drops recieved!\nShutting Down...",icon:"logo.png"});
 					shutdown(0);
 				}
 			} else {
+				$('.Window').fadeOut(250);
+				$('#CurrentAppWindow').fadeIn(250);
 				checkCardsInSeconds(1200); // 20 minutes to be safe, we should automatically check when Steam notifies us that we got a new item anyway
 			}
 		});
@@ -365,6 +398,7 @@ function checkCardApps() {
 
 function checkCardsInSeconds(seconds) {
 	g_CheckTimer = setTimeout(checkCardApps, (1000 * seconds));
+	g_Start = Date.now();
 }
 
 process.on('SIGINT', function() {
@@ -382,3 +416,39 @@ function shutdown(code) {
 		process.exit(code);
 	}, 500);
 }
+function startTimer(duration) {
+	g_Start = Date.now();
+       var diff,
+        minutes,
+        seconds;
+    function timer() {
+        // get the number of seconds that have elapsed since 
+        // startTimer() was called
+        diff = duration - (((Date.now() - g_Start) / 1000) | 0);
+
+        // does the same job as parseInt truncates the float
+        minutes = (diff / 60) | 0;
+        seconds = (diff % 60) | 0;
+
+        minutes = minutes < 10 ? "0" + minutes : minutes;
+        seconds = seconds < 10 ? "0" + seconds : seconds;
+
+        $('#RefreshTime').html(minutes + ":" + seconds); 
+
+        if (diff <= 0) {
+            // add one second so that the count down starts at the full duration
+            // example 05:00 not 04:59
+            g_Start = Date.now();
+        }
+    };
+    // we don't want to wait a full second before the timer starts
+    timer();
+    setInterval(timer, 1000);
+}
+$(document).ready(function(){
+	startTimer(1200);
+	$("#LoginForm").on("submit",function(e){
+		e.preventDefault();e.stopPropagation();
+		login();
+	})
+});

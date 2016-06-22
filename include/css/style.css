@@ -1,0 +1,57 @@
+@font-face {
+	font-family:"Lobster";
+	src:url("../font/Lobster_1_4.ttf") format("truetype");
+	font-weight:normal;
+	font-style:normal;
+}
+h1 {
+	font-family:Lobster;
+}
+.lobster {
+	font-family:Lobster;
+}
+.list li {
+  background: url("") no-repeat 97% 50%;
+  border-bottom: 1px solid #ccc;
+  display: table;
+  border-collapse: collapse;
+  width: 100%;
+}
+.inner {
+  overflow: hidden;
+}
+.li-img {
+  display: table-cell;
+  vertical-align: middle;
+  width: 50%;
+  padding-right: 1em;
+}
+.li-img img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.li-text {
+  display: table-cell;
+  vertical-align: middle;
+  width: 50%;
+}
+.li-head {
+  margin: 0;
+}
+.li-sub {
+  margin: 0;
+}
+
+@media all and (min-width: 560px) {
+  .list li {
+    float: left;
+    width: 50%;
+  }
+}
+
+@media all and (min-width: 1200px) {
+  .list li {
+    width: 33.33333%;
+  }
+}

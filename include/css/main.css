@@ -1,0 +1,258 @@
+@font-face {
+	font-family:"Lobster";
+	src:url("../fonts/Lobster_1_4.ttf") format("truetype");
+	font-weight:normal;
+	font-style:normal;
+}
+@font-face {
+	font-family:"Brandon-Light";
+	src:url("../fonts/BrandonText-Light.otf") format("opentype");
+	font-weight:normal;
+	font-style:normal;
+}
+@font-face {
+	font-family:"Brandon-Thin";
+	src:url("../fonts/BrandonText-Thin.otf") format("opentype");
+	font-weight:normal;
+	font-style:normal;
+}
+@font-face {
+	font-family:"Brandon-Medium";
+	src:url("../fonts/BrandonText-Medium.otf") format("opentype");
+	font-weight:normal;
+	font-style:normal;
+}
+@font-face {
+	font-family:"Brandon-Regular";
+	src:url("../fonts/BrandonText-Regular.otf") format("opentype");
+	font-weight:normal;
+	font-style:normal;
+}
+.lobster {
+	font-family:Lobster;
+}
+.navbar{
+	border-radius:0px;
+	background-color:#171a21;
+}
+p,h1,h2,h3,h4,h5,em,i,span,div,img{
+	cursor:default;
+}
+body{
+	cursor:default;
+	background-color:#1b2838; /*#171a21;*/
+    overflow: hidden;
+	max-height:100vh;
+	margin-top:0px;
+	margin-bottom:0px;
+	font-family: Brandon-Regular;
+	color:#EFEFEF;
+}
+.Window{
+	padding-top:40px;
+	background-color:#1b2838;
+}
+#WindowDragable {
+	height:30px;
+	width:260px;
+}
+#LoadingWindow progress{
+	display:none;
+}
+#Menu {
+	background-color:#171a21;
+	position:fixed;
+	top:0px;
+	right:0px;
+	z-index:9999;
+	width:100vw;
+	height:30px;
+}
+#Menu a {
+	font-size:30px;
+	position:fixed;
+	top:0px;
+	margin:0px;
+	padding:0px;
+}
+#Menu i{
+	cursor:pointer !important;
+}
+#Menu #AppLogout:hover {
+	color:#e67e22;
+}
+#Menu #AppLogout {
+	display:none;
+	color:#d35400;
+}
+#Menu #AppSettings:hover {
+	top:2px;
+	font-size:26px;
+	color:#3498db;
+}
+#Menu #AppSettings {
+	top:2px;
+	font-size:26px;
+	color:#2980b9;
+}
+#Menu #AppClose:hover{
+	color:red;
+}
+#Menu #AppClose {
+	color:#c8102e;	
+}
+#NewItems{
+	background-color:#67A53D;
+	background-image: -webkit-linear-gradient(top, #8EB259, #67A53D);
+	background-image: -moz-linear-gradient(top, #8EB259, #67A53D);
+	background-image: -ms-linear-gradient(top, #8EB259, #67A53D);
+	background-image: -o-linear-gradient(top, #8EB259, #67A53D);
+	background-image: linear-gradient(to bottom, #8EB259, #67A53D);
+}
+#LoginWindow {
+	text-align:center;
+	height:100vh;
+	margin-top:0px;
+	margin-bottom:0px;
+}
+#LoginWindow img{
+	margin-top:80px;
+	margin-bottom:40px;
+}
+#LoginWindow input.input-lg,#LoadingWindow input.input-lg{
+	text-align:center;
+	margin-bottom:30px;
+	background-color:rgba(0,0,0,0.2);
+	border: 1px solid rgba(0,0,0,0);
+	-moz-box-shadow:    inset 0 0 10px #000000;
+	-webkit-box-shadow: inset 0 0 10px #000000;
+	box-shadow:         inset 0 0 10px #000000;
+	font-family: FontAwesome,Brandon-Regular;
+	color:whitesmoke;
+}
+
+#LoginWindow span{
+    display:block;
+    border:none;
+    height:1px;
+    background: -webkit-gradient(radial, 50% 50%, 0, 50% 50%, 130, from(rgba(0,0,0,1)), to(rgba(0,0,0,0)));
+}
+.Error {
+	font-size:15px;
+	color:#c8102e;
+	font-family: Brandon-Regular;
+	height:20px;
+}
+#LoginWindow button, #LoadingWindow button {
+	background-color:#67A53D;
+	background-image: -webkit-linear-gradient(top, #8EB259, #67A53D);
+	background-image: -moz-linear-gradient(top, #8EB259, #67A53D);
+	background-image: -ms-linear-gradient(top, #8EB259, #67A53D);
+	background-image: -o-linear-gradient(top, #8EB259, #67A53D);
+	background-image: linear-gradient(to bottom, #8EB259, #67A53D);
+	margin-top:30px;
+	border: 0;
+	outline:none;
+	color:#EFEFEF;
+	font-family: Brandon-Regular;
+}
+#LoginWindow button::-moz-focus-inner, #LoadingWindow button::-moz-focus-inner {
+	border: 0;
+	outline:none;
+}
+#LoadingWindow{
+	display:none;
+	position:fixed;
+	top:0px;
+	left:0px;
+	height:100vh;
+	width:100vw;
+	text-align:center;
+	z-index:1000;
+}
+#LoadingWindow i{
+	font-size:60px;
+	margin-top:155px;
+	color:white;
+}
+#AuthCode {
+	text-transform:uppercase;
+}
+#CurrentAppWindow {
+	position:fixed;
+	top:0px;
+	left:0px;
+	display:none;
+	height:100vh;
+	width:100vw;
+}
+#CurrentAppWindow img{
+	width:100%;
+}
+#CurrentAppWindow #RefreshIn{
+	width:100%;
+	position:absolute;
+	bottom:0px;
+	left:0px;
+	text-align:right;
+	background-color: #171a21;
+}
+#CurrentAppWindow #NewItems{
+	cursor: pointer;
+	float:left;
+	margin-left:5px;
+	margin-top: 2px;
+	font-family:Brandon-Light;
+}
+#RefreshTime {
+	min-width:45px;
+	text-align:left;
+	display:inline-block;
+}
+::selection{
+	background-color:#333333;
+	color:#ccc;
+}
+.list{
+  padding-left:0px;
+}
+.list li {
+  background-color: rgba(0, 0, 0, 0.35);
+  display: table;
+  border-collapse: collapse;
+  width: 100%;
+  margin-bottom:3px;
+}
+.li-img {
+  display: table-cell;
+  vertical-align: middle;
+  width: 22%;
+  padding:0.5em;
+  padding-right: 1em;
+}
+.li-img img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.li-text {
+  display: table-cell;
+  vertical-align: middle;
+  width: 70%;
+}
+.li-head {
+  margin: 0;
+  color:whitesmoke;
+  font-size:1em;
+  width: 220px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  font-family: Brandon-Medium;
+}
+.li-sub {
+  margin: 0;
+  font-size: 12px;
+  color: grey;
+  font-family: Brandon-Medium;
+}

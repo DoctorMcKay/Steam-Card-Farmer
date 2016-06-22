@@ -1,0 +1,87 @@
+<html>
+<head>
+	<title>Steam Card Farmer</title>
+    <link rel="stylesheet" href="../include/css/bootstrap.min.css">
+	<!-- Normalize CSS -->
+    <link rel="stylesheet" href="../include/css/normalize.css">
+	<!-- Fort Awesome CSS -->
+	<link rel="stylesheet" href="../include/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../include/css/main.css">
+	<script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+    <script src="../include/js/jquery.min.js"></script>
+	<script>if (window.module) module = window.module;</script>
+	<script src="../include/js/tether.min.js"></script>
+	<script src="../include/js/bootstrap.min.js"></script>
+	<script src="../farmer.js"></script>
+</head>
+<body style="-webkit-user-select: none;">
+<script>
+remote = require('electron').remote;
+g_CurrentWindow = remote.getGlobal('g_CurrentWindow');
+app = remote.getGlobal('app');
+</script>
+<div id="Menu">
+	<div id="WindowDragable" style="-webkit-app-region: drag;">
+		<h4><i class="fa fa-steam"></i> Card Farmer</h4>
+	</div>
+	<div id="Controls">
+		<a href="#" id="AppLogout" onclick="client.logOff();location.reload();" style="right:56px;">
+			<i class="fa fa-sign-out"></i>
+		</a>
+		<a href="#" id="AppSettings" onclick="g_CurrentWindow.webContents.openDevTools({mode:'detach'})" style="right:30px;">
+			<i class="fa fa-cog"></i>
+		</a>
+		<a href="#" id="AppClose" onclick="app.quit();" style="right:0px;">
+			<i class="fa fa-times"></i>
+		</a>
+	</div>
+</div>
+<!-- Login Modal -->
+  <div id="LoginWindow" class="Window">
+	<div class="container">
+		<img src="http://steamcommunity-a.akamaihd.net/public/shared/images/header/globalheader_logo.png" />
+		<div class="Error"></div>
+		<form id="LoginForm" >
+			<input id="username" class="input-lg form-control" placeholder='&#xf007 username' required/>
+			<input id="password" type="password" class="input-lg form-control" placeholder='&#xf084 password' required/>
+			<!--
+			<div id="rememberme" >
+				<input type="checkbox" id="RememberMe" /><label for="RememberMe">&nbsp;Remember me</label>
+			</div>
+			-->
+			<span></span>
+			<button type="submit" class="btn btn-block" >Login</button>
+		</form>
+	</div>
+  </div>
+ <!--Loading Div-->
+ <div id="LoadingWindow" class="Window">
+	<div class="container">
+		<i class="fa fa-spin fa-refresh"></i>
+		<div>
+			<p></p>
+			<progress class="progress" value="0" max="100"></progress>
+			<div class="Error"></div>
+		</div>
+	</div>
+ </div>
+ <div id="CurrentAppWindow" class="Window">
+	<div class="container">
+		<img src="" alt="Image Not Found" />
+		<h4></h4>
+		<p></p>
+		<div id="RefreshIn"><span id="NewItems" class="label label-pill" data-toggle="tooltip" data-placement="right" title="New Items"></span>Refresh in <div id="RefreshTime"></div></div>
+	</div>
+ </div>
+ <div id="MultiAppsWindow" class="Window">
+  <div id="pattern" class="pattern">
+  	<ul class="list img-list">
+	
+	</ul>
+	</div>
+ </div>
+<script>
+$("#NewItems").tooltip();
+</script>
+</body>
+</html>
