@@ -14,8 +14,6 @@ var g_Jar = request.jar();
 request = request.defaults({"jar": g_Jar});
 var g_Page = 1;
 var g_Start;
-var g_Progress;
-var g_TotalProgress;
 var g_CheckTimer;
 var g_OwnedApps = [];
 
