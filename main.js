@@ -40,6 +40,4 @@ function openWindow(filename) {
 	g_CurrentWindow.on('closed', () => {
 		g_CurrentWindow = null;
 	});
-	//Open Dev Tools
-	g_CurrentWindow.webContents.openDevTools({mode:"detach"});
 }
