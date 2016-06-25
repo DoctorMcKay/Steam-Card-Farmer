@@ -15,8 +15,9 @@
 	},
 	"license": "GPLv3",
 	"scripts": {
-		"start": "electron .",
-		"preinstall": "npm list electron-prebuilt -g || npm install electron-prebuilt -g"
+		"start": "electron-packager \"./\" \"Steam Card Farmer\" --platform=win32 --arch=x64 --ignore=\"./builds*\" --out=\"./builds\" --overwrite --version=1.2.5",
+		"test": "electron .",
+		"preinstall": "(npm list electron-prebuilt -g || npm install electron-prebuilt -g) && (npm list electron-packager -g || npm install electron-packager -g)"
 	},
 	"main": "main.js"
 }

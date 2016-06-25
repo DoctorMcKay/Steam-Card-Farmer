@@ -1,3 +1,4 @@
 node_modules/*
 sentry.*.sha1
 servers.json
+builds/*
