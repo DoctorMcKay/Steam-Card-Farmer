@@ -366,7 +366,7 @@ function checkCardApps() {
 					title.find('.badge_view_details').remove();
 					title = title.text().trim();
 					
-					new Notification("Steam Card Farmer",{body:"Idling \"" + title + "\"\n" + match[1] + " drop" + (match[1] == 1 ? '' : 's') + " remaining",icon:"logo.png"});
+					new Notification("Steam Card Farmer",{body:"Idling \"" + title + "\"\n" + match[1] + " drop" + (match[1] == 1 ? '' : 's') + " remaining",icon:"http://cdn.akamai.steamstatic.com/steamcommunity/public/images/apps/" + appid + "/" + client.picsCache.apps[appid].appinfo.common.icon + ".jpg"});
 					client.gamesPlayed(parseInt(appid, 10));
 					$('#CurrentAppWindow img').attr("src","http://cdn.akamai.steamstatic.com/steam/apps/" + appid + "/header.jpg");
 					$('#CurrentAppWindow h4').html(title);
