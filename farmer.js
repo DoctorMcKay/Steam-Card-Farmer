@@ -72,7 +72,7 @@ client.on('steamGuard', function(domain, callback, lastcode) {
 });
 
 client.on('loggedOn', function() {
-	client.setPersona(3);
+	client.setPersona(0);
 	$('.Error').html("");
 	log("Logged into Steam!");
 	$("#AppLogout").fadeIn(250);

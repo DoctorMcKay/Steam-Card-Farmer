@@ -40,13 +40,17 @@ p,h1,h2,h3,h4,h5,em,i,span,div,img{
 }
 body{
 	cursor:default;
-	background-color:#1b2838; /*#171a21;*/
-    overflow: hidden;
+	background-color:#1b2838;
+	overflow: scroll;
+	overflow-x: hidden;
 	max-height:100vh;
 	margin-top:0px;
 	margin-bottom:0px;
 	font-family: Brandon-Regular;
 	color:#EFEFEF;
+}
+::-webkit-scrollbar {
+	width: 0px;  /* remove scrollbar space */
 }
 .Window{
 	padding-top:40px;
@@ -132,10 +136,10 @@ body{
 }
 
 #LoginWindow span{
-    display:block;
-    border:none;
-    height:1px;
-    background: -webkit-gradient(radial, 50% 50%, 0, 50% 50%, 130, from(rgba(0,0,0,1)), to(rgba(0,0,0,0)));
+	display:block;
+	border:none;
+	height:1px;
+	background: -webkit-gradient(radial, 50% 50%, 0, 50% 50%, 130, from(rgba(0,0,0,1)), to(rgba(0,0,0,0)));
 }
 .Error {
 	font-size:15px;
@@ -170,7 +174,7 @@ body{
 	text-align:center;
 	z-index:1000;
 }
-#LoadingWindow i{
+#LoadingWindow i.fa-refresh{
 	font-size:60px;
 	margin-top:155px;
 	color:white;
@@ -197,13 +201,16 @@ body{
 	text-align:right;
 	background-color: #171a21;
 }
-#CurrentAppWindow #NewItems{
+#CurrentAppWindow #NewItems, #onlineStatus{
 	cursor: pointer;
 	float:left;
 	margin-left:5px;
 	margin-top: 2px;
 	font-family:Brandon-Light;
 }
+ #onlineStatus span{
+	cursor:pointer;
+ }
 #RefreshTime {
 	min-width:45px;
 	text-align:left;
@@ -214,45 +221,45 @@ body{
 	color:#ccc;
 }
 .list{
-  padding-left:0px;
+	padding-left:0px;
 }
 .list li {
-  background-color: rgba(0, 0, 0, 0.35);
-  display: table;
-  border-collapse: collapse;
-  width: 100%;
-  margin-bottom:3px;
+	background-color: rgba(0, 0, 0, 0.35);
+	display: table;
+	border-collapse: collapse;
+	width: 100%;
+	margin-bottom:3px;
 }
 .li-img {
-  display: table-cell;
-  vertical-align: middle;
-  width: 22%;
-  padding:0.5em;
-  padding-right: 1em;
+	display: table-cell;
+	vertical-align: middle;
+	width: 22%;
+	padding:0.5em;
+	padding-right: 1em;
 }
 .li-img img {
-  display: block;
-  width: 100%;
-  height: auto;
+	display: block;
+	width: 100%;
+	height: auto;
 }
 .li-text {
-  display: table-cell;
-  vertical-align: middle;
-  width: 70%;
+	display: table-cell;
+	vertical-align: middle;
+	width: 70%;
 }
 .li-head {
-  margin: 0;
-  color:whitesmoke;
-  font-size:1em;
-  width: 220px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  overflow: hidden;
-  font-family: Brandon-Medium;
+	margin: 0;
+	color:whitesmoke;
+	font-size:1em;
+	width: 220px;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
+	font-family: Brandon-Medium;
 }
 .li-sub {
-  margin: 0;
-  font-size: 12px;
-  color: grey;
-  font-family: Brandon-Medium;
+	margin: 0;
+	font-size: 12px;
+	color: grey;
+	font-family: Brandon-Medium;
 }
