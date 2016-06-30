@@ -70,7 +70,14 @@ app = remote.getGlobal('app');
 		<img src="" alt="Image Not Found" />
 		<h4></h4>
 		<p></p>
-		<div id="RefreshIn"><span id="NewItems" class="label label-pill" data-toggle="tooltip" data-placement="right" title="New Items"></span>Refresh in <div id="RefreshTime"></div></div>
+		<div id="RefreshIn">
+			<span id="NewItems" class="label label-pill" data-toggle="tooltip" data-placement="right" title="New Items"></span>
+			<span id="onlineStatus" class="label label-pill" data-toggle="tooltip" data-placement="top" title="" data-original-title="Online Status">
+				<span id="goOnline" onclick="client.setPersona(SteamUser.EPersonaState.Online);">Appear Offline</span>
+				<span id="goOffline" onclick="client.setPersona(SteamUser.EPersonaState.Offline);" style="display: none">Online | In Game</span>
+			</span>
+			Refresh <div id="RefreshTime"></div>
+		</div>
 	</div>
  </div>
  <div id="MultiAppsWindow" class="Window">
@@ -81,7 +88,10 @@ app = remote.getGlobal('app');
 	</div>
  </div>
 <script>
-$("#NewItems").tooltip();
+$("[data-toggle=tooltip]").tooltip();
+$("#onlineStatus span").click(function(){
+	$("#onlineStatus span").toggle();
+});
 </script>
 </body>
 </html>
