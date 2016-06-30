@@ -76,7 +76,6 @@ client.on('loggedOn', function() {
 	$('.Error').html("");
 	log("Logged into Steam!");
 	$("#AppLogout").fadeIn(250);
-	$("#AppClose").attr("onclick","client.logOff();process.exit(0);");
 	log("Waiting for license info...");
 	$('#LoadingWindow p').html("Waiting for license info...");
 	console.log(client);
@@ -383,7 +382,7 @@ function checkCardApps() {
 					checkMinPlaytime();
 				} else {
 					new Notification("Steam Card Farmer",{body:"All card drops recieved!\nShutting Down...",icon:"logo.png"});
-					shutdown(0);
+					shutdown();
 				}
 			} else {
 				$('.Window').fadeOut(250);
@@ -401,17 +400,20 @@ function checkCardsInSeconds(seconds) {
 
 process.on('SIGINT', function() {
 	log("Logging off and shutting down");
-	shutdown(0);
+	shutdown();
 });
 
-function shutdown(code) {
-	client.logOff();
-	client.once('disconnected', function() {
-		process.exit(code);
-	});
-
+function shutdown(code=0) {
+	try{
+		client.logOff();
+		client.once('disconnected', function() {
+			app.quit(code);
+		});
+	}catch(e){
+		app.quit(code);
+	}
 	setTimeout(function() {
-		process.exit(code);
+		app.quit(code);
 	}, 500);
 }
 function startTimer(duration) {
