@@ -222,41 +222,17 @@ function checkMinPlaytime(){
 				var lowAppsToIdle = [];
 				
 				if(newApps.length > 0) {
-					function getResponseNewApps(){
-						switch(prompt("WARNING: Proceeding will waive your right to a refund on\nthe following apps:\n  - " + newApps.map(function(app) { return app.name; }).join("\n  - ") +
-						"\n\nDo you wish to continue?\n" +
-						"    y = yes, idle all of these apps and lose my refund\n" +
-						"    n = no, don't idle any of these apps and keep my refund\n" +
-						"    c = choose which apps to idle").toLowerCase()) {
-							case 'y':
-								lowAppsToIdle = lowHourApps.map(function(app) { return app.appid; });
-								startErUp();
-								break;
-							
-							case 'n':
-								lowAppsToIdle = [];
-								startErUp();
-								break;
-							
-							case 'c':
-								lowAppsToIdle = [];
-								lowHourApps.forEach(function(app) {
-									switch(prompt("Idle " + app.name + "? [y/n]").toLowerCase()){
-										case 'y':
-											lowAppsToIdle.push(app);
-											break;
-										case 'n':
-											break;
-										default:
-											break;
-									}
-								});
-								startErUp();
-							default: 
-								getResponseNewApps();
-						}
+					switch(confirm("WARNING: Proceeding will waive your right to a refund on\nthe following apps:\n  - " + newApps.map(function(app) { return app.name; }).join("\n  - ") +	"\n\nDo you wish to continue?")) {
+						case true:
+							lowAppsToIdle = lowHourApps.map(function(app) { return app.appid; });
+							startErUp();
+							break;
+						
+						case false:
+							lowAppsToIdle = [];
+							startErUp();
+							break;
 					}
-					getResponseNewApps();
 				} else {
 					lowAppsToIdle = lowHourApps.map(function(app) { return app.appid; });
 					startErUp();
