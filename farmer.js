@@ -142,7 +142,7 @@ function checkMinPlaytime() {
 				});
 				
 				// Find out if we have drops left
-				var drops = row.find('.progress_info_bold').text().match(/(\d+) card drops? remaining/);
+				var drops = row.find('.progress_info_bold').text().match(/(\d+)/);
 				if(!drops) {
 					return;
 				}
@@ -153,7 +153,7 @@ function checkMinPlaytime() {
 				}
 				
 				// Find out playtime
-				var playtime = row.find('.badge_title_stats').html().match(/(\d+\.\d+) hrs on record/);
+				var playtime = row.find('.badge_title_stats').html().match(/(\d+\.\d+)/);
 				if(!playtime) {
 					playtime = 0.0;
 				} else {
@@ -315,7 +315,7 @@ function checkCardApps() {
 			var infolines = $('.progress_info_bold');
 			
 			for(var i = 0; i < infolines.length; i++) {
-				var match = $(infolines[i]).text().match(/(\d+) card drops? remaining/);
+				var match = $(infolines[i]).text().match(/(\d+)/);
 				
 				var href = $(infolines[i]).closest('.badge_row').find('.badge_title_playgame a').attr('href');
 				if(!href) {
@@ -346,7 +346,7 @@ function checkCardApps() {
 			
 			log(totalDropsLeft + " card drop" + (totalDropsLeft == 1 ? '' : 's') + " remaining across " + appsWithDrops + " app" + (appsWithDrops == 1 ? '' : 's') + " (Page " + g_Page + ")");
 			if(totalDropsLeft == 0) {
-				if ($('.badge_row').length == 150)){
+				if ($('.badge_row').length > 0){
 					log("No drops remaining on page "+g_Page);
 					g_Page++;
 					log("Checking page "+g_Page);
